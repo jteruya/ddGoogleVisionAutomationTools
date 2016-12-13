@@ -6,16 +6,11 @@ import os
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-import pandas as pd
-import numpy as np
-
 import json
 import requests
 import psycopg2
 
 import google_code
-
-
 
 def push_to_database(result_json,table_name):
 
@@ -36,7 +31,7 @@ def push_to_database(result_json,table_name):
             else:
                 input_list.append(None)
 
-        format_string = ','.join(['%s' for i in np.arange(len(input_list))])
+        format_string = ','.join(['%s' for i in range(len(input_list))])
         insert_string = """INSERT INTO """ + table_name + """ VALUES (""" + format_string + """)"""
 
         cur.execute(insert_string,tuple(input_list))
