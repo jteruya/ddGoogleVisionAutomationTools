@@ -33,7 +33,7 @@ def push_to_database(result_json,table_name):
 
         format_string = ','.join(['%s' for i in range(len(input_list))])
         insert_string = """INSERT INTO """ + table_name + """ VALUES (""" + format_string + """)"""
-
+      
         cur.execute(insert_string,tuple(input_list))
         conn.commit()
 
@@ -57,17 +57,13 @@ def build_payload(image_list_file):
 
     return json.load(file('payload.json')),map(lambda x: x.split()[0],input_lines)
 
-def main():
+def main(filepath, tablename):
 
-    if len(sys.argv) > 1:
-        filepath = sys.argv[1]
-    else:
-        filepath = 'files_to_analyze.csv'
+    #if len(sys.argv) > 1:
+    #    filepath = sys.argv[1]
 
-    if len(sys.argv) > 2:
-        tablename = sys.argv[2]
-    else:
-        tablename = 'ben.image_vision_test'
+    #if len(sys.argv) > 2:
+    #    tablename = sys.argv[2]
 
     try:
         payload,imagepath_list = build_payload(filepath)
@@ -85,9 +81,6 @@ def main():
     
     for i,entry in enumerate(result_json['responses']):
         entry['filename'] = imagepath_list[i]
-
-    print result_json['responses'][0].keys()
-    print result_json['responses'][1].keys()    
         
     try:
         push_to_database(result_json,tablename)
