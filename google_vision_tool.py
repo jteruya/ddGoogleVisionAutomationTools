@@ -19,7 +19,7 @@ def push_to_database(result_json,table_name):
     conn = psycopg2.connect("dbname='analytics' user='etl' host='10.223.192.6' password='s0.Much.Data' port='5432'")
     cur = conn.cursor()
 
-    print google_code.DETECTION_TYPES
+    #print google_code.DETECTION_TYPES
     
     for entry in result_json:
         input_list = []
@@ -84,6 +84,7 @@ def main(filepath, tablename):
         
     try:
         push_to_database(result_json,tablename)
+        print 'Insert Successful into DB'
     except:
         print 'ERROR Unable to push to database. Make sure table is consistent with input schema'
         raise

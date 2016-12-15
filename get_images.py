@@ -23,6 +23,7 @@ def get_event_images(applicationId):
     # Execute SQL Query
     cur.execute(image_list_sql)
     
+    # Get all records into a list
     results = cur.fetchall()
     
     # Close Connection to Robin
@@ -36,79 +37,100 @@ def download_images(image_count, results = []):
         
     # Download the images
     for i in range(0, image_count - 1):
-        urllib.urlretrieve(str(results[i][0]), "images/" + results[i][1])
+        try:
+            urllib.urlretrieve(str(results[i][0]), "images/" + results[i][1])
+        except:
+            print("Unable to load the file: " + results[i][1] + "\n")
+            pass 
     
 # Get all of the images in the images directory into a txt file.
-def get_image_list():
+def get_image_list(file_name):
+
     # Look for images successfully downloaded into images folder
     files = glob.glob ('images/*.jpg')
     
-    # Create a file
-    with open('images.txt', 'w+') as in_files:
+    # Create list of images in the directory
+    with open(file_name, 'w+') as in_files:
         for eachfile in files: in_files.write(eachfile+' 1:10 2:10 3:10 4:10 5:10 6:10\n')
 
 # Remove all of the images in the images directory.
 def remove_images():
+
+    # Retreive all .jpg files in the images directory
     files = glob.glob('images/*.jpg')
-        
+    
+    # Cycle through and delete all jpg files.    
     for f in files:
         os.remove(f)    
 
 # Cycle through all of the images and perform all of the subtasks
-def cycle_through_images(start, stop, max, results = []):
+def cycle_through_images(results_start_index, results_stop_index, dl_image_max, results = []):
 
-    filepath = "images.txt"
-    tablename = "ben.compute_vision_hackday"
+    file_name = "images.txt"
+    output_table_name = "ben.compute_vision_hackday"
 
-    # Cycle through all of the images from start to stop in max increments.
-    while (start <= stop):
+    # Cycle through all of the images in the results image
+    while (results_start_index <= results_stop_index):
 
-        new_results = results[start:(start + max - 1)]
+        # Set the new increment for iteration of the for loop
+        results_new_end = results_start_index + dl_image_max - 1
 
-        print("Retrieving " + str(start) + " to " + str(start+max) + " images.")
-        print new_results
+        # Get the subset of images from the image list
+        new_results = results[results_start_index:results_new_end]
 
+        # Get the true subset end index
+        if results_stop_index < results_new_end:
+            results_new_end = results_stop_index
+
+        # Display where in the image list the for loop is processing.
+        print("Retrieving " + str(results_start_index + 1) + " to " + str(results_new_end + 1) + " images of " + str(results_stop_index + 1) + " total images.")
+
+        # Remove any images in the images directory
         remove_images()
 
-        download_images(max, new_results)
+        # Download the new images
+        download_images(dl_image_max, new_results)
         
         # Create input text file
-        get_image_list()
+        get_image_list(file_name)
         
         # Call Ben's Script
-        google_vision_tool.main(filepath, tablename)
+        google_vision_tool.main(file_name, output_table_name)
 
         # Reset to next set
-        start = start + max
+        results_start_index= results_start_index + dl_image_max
 
 
 def main():
     
-    # Set Initial Values
-    max = 10
+    # Set Max Image Download Number
+    dl_image_max = 10
 
-    # Get Arguments
+    # Get Event ID Argument
     try: 
         applicationId = sys.argv[1]
-        print("Getting Images for ApplicationId:" + applicationId +"\n")
+        print("Getting Images for ApplicationId: " + applicationId + "\n")
     except IndexError as err:
-        print 'ERROR: Missing Input Parameter'
+        print 'ERROR: Missing ApplicationId Input Parameter'
         exit()  
-    
-    # Empty SQL Results
+
+        
+    # Initialize SQL Results
     results = []
     
-    # Get all of the images associated with the event
+    # Get all of the images associated with an event
     results = get_event_images(applicationId)
     print("There are " + str(len(results)) + " images related to this event\n")
 
     # Download the images
-    start = 0
-    stop = (len(results) - 1)
-    cycle_through_images(start, stop, max, results)
+    results_start_index = 0
+    results_stop_index = (len(results) - 1)
+    cycle_through_images(results_start_index, results_stop_index, dl_image_max, results)
     
-    # Delete Images
+    # Delete Images - Final Time
     remove_images()
+
+    print "Done\n"
     
 if __name__ == "__main__":
     
