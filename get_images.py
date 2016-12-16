@@ -33,10 +33,10 @@ def get_event_images(applicationId):
     return results
 
 # Download a set of images.
-def download_images(image_count, results = []):
+def download_images(results = []):
         
     # Download the images
-    for i in range(0, image_count - 1):
+    for i in range(0, len(results)):
         try:
             urllib.urlretrieve(str(results[i][0]), "images/" + results[i][1])
         except:
@@ -51,7 +51,7 @@ def get_image_list(file_name):
     
     # Create list of images in the directory
     with open(file_name, 'w+') as in_files:
-        for eachfile in files: in_files.write(eachfile+' 1:10 2:10 3:10 4:10 5:10 6:10\n')
+        for eachfile in files: in_files.write(eachfile +' 1:10 2:10 3:10 4:10 5:10 6:10\n')
 
 # Remove all of the images in the images directory.
 def remove_images():
@@ -63,42 +63,60 @@ def remove_images():
     for f in files:
         os.remove(f)    
 
+def clear_output_table(output_table_name, applicationId):
+
+    conn = psycopg2.connect("dbname='analytics' user='etl' host='10.223.192.6' password='s0.Much.Data' port='5432'")
+    cur = conn.cursor()
+
+    # Clear out table for specific applicationids
+    delete_string = """DELETE FROM """ + output_table_name + """ WHERE ApplicationId = '""" + applicationId + """'"""
+    cur.execute(delete_string)
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+
 # Cycle through all of the images and perform all of the subtasks
-def cycle_through_images(results_start_index, results_stop_index, dl_image_max, results = []):
+def cycle_through_images(results_start_index, results_stop_index, dl_image_max, application_Id, results = []):
 
     file_name = "images.txt"
-    output_table_name = "ben.compute_vision_hackday"
+    output_table_name = "JT.Compute_Vision_Hackday"
+
+    # Clear output table
+    clear_output_table(output_table_name, application_Id)
 
     # Cycle through all of the images in the results image
     while (results_start_index <= results_stop_index):
 
         # Set the new increment for iteration of the for loop
-        results_new_end = results_start_index + dl_image_max - 1
+        results_new_end = results_start_index + dl_image_max
 
         # Get the subset of images from the image list
         new_results = results[results_start_index:results_new_end]
 
         # Get the true subset end index
         if results_stop_index < results_new_end:
-            results_new_end = results_stop_index
+            results_new_end = results_stop_index + 1
 
         # Display where in the image list the for loop is processing.
-        print("Retrieving " + str(results_start_index + 1) + " to " + str(results_new_end + 1) + " images of " + str(results_stop_index + 1) + " total images.")
+        print("Retrieving " + str(results_start_index + 1) + " to " + str(results_new_end) + " images of " + str(results_stop_index + 1) + " total images.")
 
         # Remove any images in the images directory
         remove_images()
 
         # Download the new images
-        download_images(dl_image_max, new_results)
+        download_images(new_results)
         
         # Create input text file
         get_image_list(file_name)
         
         # Call Ben's Script
-        google_vision_tool.main(file_name, output_table_name)
+        google_vision_tool.main(file_name, output_table_name, application_Id)
 
         # Reset to next set
         results_start_index= results_start_index + dl_image_max
+
 
 
 def main():
@@ -108,8 +126,8 @@ def main():
 
     # Get Event ID Argument
     try: 
-        applicationId = sys.argv[1]
-        print("Getting Images for ApplicationId: " + applicationId + "\n")
+        application_Id = sys.argv[1]
+        print("Getting Images for ApplicationId: " + application_Id + "\n")
     except IndexError as err:
         print 'ERROR: Missing ApplicationId Input Parameter'
         exit()  
@@ -119,13 +137,13 @@ def main():
     results = []
     
     # Get all of the images associated with an event
-    results = get_event_images(applicationId)
+    results = get_event_images(application_Id)
     print("There are " + str(len(results)) + " images related to this event\n")
 
     # Download the images
     results_start_index = 0
     results_stop_index = (len(results) - 1)
-    cycle_through_images(results_start_index, results_stop_index, dl_image_max, results)
+    cycle_through_images(results_start_index, results_stop_index, dl_image_max, application_Id, results)
     
     # Delete Images - Final Time
     remove_images()
