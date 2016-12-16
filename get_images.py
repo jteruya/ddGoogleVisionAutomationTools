@@ -117,6 +117,84 @@ def cycle_through_images(results_start_index, results_stop_index, dl_image_max, 
         # Reset to next set
         results_start_index= results_start_index + dl_image_max
 
+    # Create Image Label Name
+    create_image_label_table(output_table_name, application_Id)
+    # Create Text Label Name
+    create_image_text_table(output_table_name, application_Id)
+    
+
+def create_image_label_table(output_table_name, application_Id):
+
+    conn = psycopg2.connect("dbname='analytics' user='etl' host='10.223.192.6' password='s0.Much.Data' port='5432'")
+    cur = conn.cursor()   
+
+    image_table_name = "JT.Image_Label_Scores" 
+
+    # Clear out Image Label Table
+    clear_output_table(image_table_name, application_Id)
+
+    # Insert Image Table
+    insert_string = """INSERT INTO """ + image_table_name + """ SELECT DISTINCT ApplicationId
+                                                                     , CURRENT_TIMESTAMP AS Created
+                                                                     , UPPER(ImageFileName) AS ExternalImageName
+                                                                     , CAST((LabelAnnotations->>1)::JSONB->>'score' AS NUMERIC) as Score_One
+                                                                     , (LabelAnnotations->>1)::JSONB->>'description' as Desc_One 
+                                                                     , CAST((LabelAnnotations->>2)::JSONB->>'score' AS NUMERIC) as Score_Two
+                                                                     , (LabelAnnotations->>2)::JSONB->>'description' as Desc_Two 
+                                                                     , CAST((LabelAnnotations->>3)::JSONB->>'score' AS NUMERIC) as Score_Three
+                                                                     , (LabelAnnotations->>3)::JSONB->>'description' as Desc_Three                                                                                        
+                                                                     , CAST((LabelAnnotations->>4)::JSONB->>'score' AS NUMERIC) as Score_Four
+                                                                     , (LabelAnnotations->>4)::JSONB->>'description' as Desc_Four  
+                                                                     , CAST((LabelAnnotations->>5)::JSONB->>'score' AS NUMERIC) as Score_Five
+                                                                     , (LabelAnnotations->>5)::JSONB->>'description' as Desc_Five  
+                                                                     , CAST((LabelAnnotations->>6)::JSONB->>'score' AS NUMERIC) as Score_Six
+                                                                     , (LabelAnnotations->>6)::JSONB->>'description' as Desc_Six  
+                                                                     , CAST((LabelAnnotations->>7)::JSONB->>'score' AS NUMERIC) as Score_Seven
+                                                                     , (LabelAnnotations->>7)::JSONB->>'description' as Desc_Seven  
+                                                                     , CAST((LabelAnnotations->>8)::JSONB->>'score' AS NUMERIC) as Score_Eight
+                                                                     , (LabelAnnotations->>8)::JSONB->>'description' as Desc_Eight  
+                                                                     , CAST((LabelAnnotations->>9)::JSONB->>'score' AS NUMERIC) as Score_Nine
+                                                                     , (LabelAnnotations->>9)::JSONB->>'description' as Desc_Nine  
+                                                                     , CAST((LabelAnnotations->>10)::JSONB->>'score' AS NUMERIC) as Score_Ten
+                                                                     , (LabelAnnotations->>10)::JSONB->>'description' as Desc_Ten  
+                                                                FROM """ + output_table_name + """ WHERE ApplicationId IN ('""" + application_Id + """')"""
+    cur.execute(insert_string)
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+def create_image_text_table(output_table_name, application_Id):
+
+    conn = psycopg2.connect("dbname='analytics' user='etl' host='10.223.192.6' password='s0.Much.Data' port='5432'")
+    cur = conn.cursor()   
+
+    image_table_name = "JT.Image_Text_Scores" 
+
+    # Clear out Image Label Table
+    clear_output_table(image_table_name, application_Id)
+
+    insert_string = """INSERT INTO """ + image_table_name + """ SELECT DISTINCT ApplicationId
+                                                                     , CURRENT_TIMESTAMP AS Created
+                                                                     , UPPER(ImageFileName) AS ExternalImageName
+                                                                     , (LabelAnnotations->>1)::JSONB->>'description' as Desc_One 
+                                                                     , (LabelAnnotations->>2)::JSONB->>'description' as Desc_Two 
+                                                                     , (LabelAnnotations->>3)::JSONB->>'description' as Desc_Three                                                                                        
+                                                                     , (LabelAnnotations->>4)::JSONB->>'description' as Desc_Four  
+                                                                     , (LabelAnnotations->>5)::JSONB->>'description' as Desc_Five  
+                                                                     , (LabelAnnotations->>6)::JSONB->>'description' as Desc_Six  
+                                                                     , (LabelAnnotations->>7)::JSONB->>'description' as Desc_Seven  
+                                                                     , (LabelAnnotations->>8)::JSONB->>'description' as Desc_Eight  
+                                                                     , (LabelAnnotations->>9)::JSONB->>'description' as Desc_Nine  
+                                                                     , (LabelAnnotations->>10)::JSONB->>'description' as Desc_Ten  
+                                                                FROM """ + output_table_name + """ WHERE ApplicationId IN ('""" + application_Id + """')"""    
+
+
+    cur.execute(insert_string)
+    conn.commit()
+
+    cur.close()
+    conn.close()    
 
 
 def main():
@@ -147,6 +225,7 @@ def main():
     
     # Delete Images - Final Time
     remove_images()
+
 
     print "Done\n"
     
