@@ -12,11 +12,6 @@ from flask import Flask, render_template, request, redirect, url_for, abort, ses
 from flask.ext.session import Session
 from redis import Redis
 
-sys.path.append(os.path.join(os.environ['ROOTDIR'],'shared_tools'))
-from database_interface import run_query,push_single_entry
-from logging_tools import Logger
-from html_parsing import strip_tags
-
 import pickle
 import json
 
@@ -30,11 +25,11 @@ Session(app)
 
 @app.route('/')
 def index():
-    for key in session.keys():
-        session.pop(key, None)
+    #for key in session.keys():
+    #    session.pop(key, None)
     #session.clear()
-    session.new = True
-    session['sessionid'] = os.urandom(24)
+    #session.new = True
+    #session['sessionid'] = os.urandom(24)
     #session['count'] = 1
     return {"test_json","this is a test"}
 
