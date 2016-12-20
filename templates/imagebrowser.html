@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h3> Image browser </h3>
+
+    <form id="event_form" name="event_form" method="post" action="{{ url_for('eventchooser') }}">
+    <p id="p_1" name="p_1"><button type="submit" style="width:180px"
+    onclick="wait_message()">Select this event</button><span> </span><input type="text" id="eventid" name="eventid"
+    placeholder="Application ID"> </p>
+    </form>
+    <p id="waitmessage" name="waitmessage" style="color:#ff0000"></p> 
+   
+
+{% endblock %}

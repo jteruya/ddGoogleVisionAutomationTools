@@ -29,33 +29,49 @@ def index():
     #session.new = True
     #session['sessionid'] = os.urandom(24)
     #session['count'] = 1
-    return {"test_json","this is a test"}
+    return redirect( url_for('image_chooser') )
 
-@app.route('/eventchooser',methods=['POST'])
+@app.route('/image_chooser',methods=['GET'])
 def eventchooser():
 
-    return render_template('eventsummary.html',eventid=session['eventid'],eventname=session['eventname'],n_sessions=str(n_sessions),n_filters=str(n_filters),accountname=session['accountname'],eventtype=session['eventtype'])
- 
-def plot_tag_counts(user_data):
+    return render_template('eventsummary.html')
 
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import seaborn
-    import hashlib
+@app.route('image_results',methods=['POST'])
+def image_results():
 
-    from matplotlib import rcParams
-    rcParams.update({'figure.autolayout': True})
+    session['eventid'] = request.form['eventid']
 
-    df = pd.DataFrame(map(lambda x: x[1],user_data),columns=['count'],index=map(lambda x: x[0],user_data))
-    df = df.sort_values(by='count',ascending=True)
+    image_url_list = fetch_images(session['eventid'])
 
-    plt.figure()
-    df.plot(kind='barh',legend=False,alpha=0.8)
-    plt.xlabel('Tags completed')
-    filename = 'static/tag_counts.png'
-    plt.savefig(filename)
+    if image_url_list == -999:
+        return "Ben doesn't know SQL."
+    
+    return render_template('image_results.html',image_url_list=image_url_list)
 
-    return hashlib.md5(open(filename,'rb').read()).hexdigest()
+def fetch_images(eventid):
+
+    sql_query = """
+                SELECT 'https://d3dhqk2br2olrw.cloudfront.net/' || LOWER(ucii.externalimageid) || '.jpg' AS ImageURL
+                FROM PUBLIC.Ratings_UserCheckIns UCI
+                JOIN PUBLIC.Ratings_UserCheckInImages UCII
+                ON UCI.CheckInId = UCII.CheckInId
+                WHERE UCI.ApplicationId = UPPER('%s')
+                """ % eventid
+
+    conn = psycopg2.connect("dbname='analytics' user='etl' host='10.223.192.6' password='s0.Much.Data' port='5432'")
+    cur = conn.cursor()
+
+    try:
+        cur.execute(sql_query)
+    except:
+        return -999
+
+    entries = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return entries
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5050)
