@@ -33,9 +33,9 @@ def index():
     return redirect( url_for('image_chooser') )
 
 @app.route('/image_chooser',methods=['GET'])
-def eventchooser():
+def image_chooser():
 
-    return render_template('eventsummary.html')
+    return render_template('imagebrowser.html')
 
 @app.route('/image_results',methods=['POST'])
 def image_results():
