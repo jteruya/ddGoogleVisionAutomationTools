@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Image Browser</title>
+        <meta http-equiv="content-type" content="text/html;
+						 charset=utf-8">
+        <meta content="utf-8" http-equiv="encoding">
+        <link rel="shortcut icon" href="{{ url_for('static',
+        filename='favicon.ico') }}">
+        {#
+        <link rel="stylesheet" type="text/css" href="{{
+        url_for('static',filename='styles.css') }}">
+        #}
+        <style type="text/css">
+            h1, h4, h5, h6 {
+              line-height: 1.45;
+            }
+            .outerPanel{
+            left:100%;
+            top:100%;
+            margin-left:0px;
+            margin-top:0px;
+            background:#e5e5e5;
+            }
+            .centeredPanel{
+              max-width:600px;
+              height:500px;
+              position:absolute;
+              left:50%;
+              top:50%;
+              margin-left:-250px;
+              margin-top:-350px;
+              background:#FFFFFF;
+            }
+            .notbold{
+             font-weight:normal;
+            }
+            p {
+             font-size:18px;
+            }
+
+            span {
+             font-size:18px;
+            }
+
+            h3 {
+             margin-top:1.0em;
+             margin-bottom:1.0em;
+            }
+
+            h2 {
+             line-height:1.15;
+            }
+
+            form {
+             font-size:18px;
+             line-height:1.25;
+            }
+
+            input[type=submit] {
+             height: 2em;
+             font-size:18px;
+             border-radius: 4px;
+            }
+
+            input[type=text] {
+             width:260px;
+             vertical-align:middle;
+             height:1.2em;
+            }
+
+            #firstname,#lastname {
+             width:180px;
+             vertical-align:middle;
+             height:1.1em;
+            }
+
+            button[type=submit] {
+             height: 2em;
+             font-size:18px;
+             border-radius: 4px;
+            }
+
+        </style>
+
+    <script language="Javascript">
+
+    function on_load()
+    {
+        var tag_form_check = typeof document.tag_form != 'undefined';
+        if (document.getElementById("waitmessage") != null) {
+            if ("{{ notfoundflag }}" == "") {
+    document.getElementById("waitmessage").innerHTML = ""; }
+            else {
+                alert("{{ notfoundflag }}");
+            }
+        }
+        if (tag_form_check) { document.tag_form.tag_other.disabled = true; }
+    }
+
+    function wait_message()
+    {
+        document.getElementById("waitmessage").innerHTML = "Fetching event data. Please be patient.";
+    }
+
+    function enable_text()
+    {
+        document.tag_form.tag_other.disabled = !document.tag_form.tag_other.disabled;
+        if (document.tag_form.tag_other.disabled) 
+        {
+            document.tag_form.tag_other.value = "";
+        }
+    }
+
+    </script>
+
+    </head>    
+
+    <body onload="on_load()">
+        <div class="centeredPanel">
+        {% block content %}{% endblock %}
+        </div>
+    </body>
+</html>
