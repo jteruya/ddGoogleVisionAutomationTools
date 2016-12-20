@@ -68,7 +68,7 @@ def fetch_images(eventid):
     except:
         return -999
 
-    entries = cur.fetchall()
+    entries = map(lambda x: x[0].strip('\n'),cur.fetchall())
 
     cur.close()
     conn.close()
