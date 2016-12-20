@@ -3,7 +3,8 @@
 {% block content %}
 
 {% for image in image_url_list %}
-    <img src="{{ image }}" width="200px" align="left"><br>
+    <div style="background-image: url('{{ image }}');"
+    class="imageResult"></div>
 {% endfor %}
 
 {% endblock %}

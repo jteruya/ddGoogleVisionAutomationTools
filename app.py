@@ -7,6 +7,7 @@ matplotlib.use('Agg')
 import sys
 import os
 import datetime
+import unicodedata as ucd
 
 from flask import Flask, render_template, request, redirect, url_for, abort, session,flash
 from flask.ext.session import Session
@@ -42,30 +43,40 @@ def image_chooser():
 def image_results():
 
     session['eventid'] = request.form['eventid']
+    session['keyword'] = request.form['keyword']
 
-    image_url_list = fetch_images(session['eventid'])
+    image_url_list = fetch_images(session['eventid'],session['keyword'])
 
     if image_url_list == -999:
         return "Ben doesn't know SQL."
     
     return render_template('image_results.html',image_url_list=image_url_list)
 
-def fetch_images(eventid):
+def fetch_images(eventid,keyword):
 
     sql_query = """
-                SELECT 'https://d3dhqk2br2olrw.cloudfront.net/' || LOWER(ucii.externalimageid) || '.jpg' AS ImageURL
+                SELECT distinct 'https://d3dhqk2br2olrw.cloudfront.net/' || LOWER(ucii.externalimageid) || '.jpg' AS ImageURL
                 FROM PUBLIC.Ratings_UserCheckIns UCI
                 JOIN PUBLIC.Ratings_UserCheckInImages UCII
                 ON UCI.CheckInId = UCII.CheckInId
-                WHERE UCI.ApplicationId = UPPER('%s')
-                """ % eventid
-
+                join jt.compute_vision_hackday b
+                on UPPER(UCI.Applicationid)=upper(b.applicationid)
+                and LOWER(ucii.externalimageid)=lower(b.imagefilename)
+                WHERE UCI.ApplicationId = upper('%s')
+                and 
+               ( 
+               ((lower((LabelAnnotations->>0)::JSONB->>'description')=lower('%s'))
+                and cast(((LabelAnnotations->>0)::JSONB->>'score')as decimal)>.5)
+                or ((lower((LabelAnnotations->>1)::JSONB->>'description')=lower('%s'))
+                and cast(((LabelAnnotations->>1)::JSONB->>'score')as decimal)>.5))
+                """ % (eventid,keyword,keyword)
     conn = psycopg2.connect("dbname='analytics' user='etl' host='10.223.192.6' password='s0.Much.Data' port='5432'")
     cur = conn.cursor()
 
     try:
         cur.execute(sql_query)
     except:
+        raise
         return -999
 
     entries = map(lambda x: x[0].strip('\n'),cur.fetchall())
