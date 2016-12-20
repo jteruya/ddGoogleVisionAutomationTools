@@ -36,7 +36,7 @@ def eventchooser():
 
     return render_template('eventsummary.html')
 
-@app.route('image_results',methods=['POST'])
+@app.route('/image_results',methods=['POST'])
 def image_results():
 
     session['eventid'] = request.form['eventid']
