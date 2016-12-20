@@ -16,6 +16,7 @@ import pickle
 import json
 
 import random
+import psycopg2
 
 app = Flask(__name__)
 app.debug = True
