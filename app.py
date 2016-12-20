@@ -18,6 +18,7 @@ import json
 import random
 
 app = Flask(__name__)
+app.debug = True
 app.config['SESSION_TYPE'] = 'redis'
 Session(app)
 
