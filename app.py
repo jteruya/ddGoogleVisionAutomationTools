@@ -65,11 +65,39 @@ def fetch_images(eventid,keyword):
                 WHERE UCI.ApplicationId = upper('%s')
                 and 
                ( 
-               ((lower((LabelAnnotations->>0)::JSONB->>'description')=lower('%s'))
+               ((lower((LabelAnnotations->>0)::JSONB->>'description') like lower('%s'))
                 and cast(((LabelAnnotations->>0)::JSONB->>'score')as decimal)>.5)
-                or ((lower((LabelAnnotations->>1)::JSONB->>'description')=lower('%s'))
-                and cast(((LabelAnnotations->>1)::JSONB->>'score')as decimal)>.5))
-                """ % (eventid,keyword,keyword)
+                or ((lower((LabelAnnotations->>1)::JSONB->>'description') like lower('%s'))
+                and cast(((LabelAnnotations->>1)::JSONB->>'score')as decimal)>.5)
+                or ((lower((LabelAnnotations->>2)::JSONB->>'description') like lower('%s'))
+                and cast(((LabelAnnotations->>2)::JSONB->>'score')as decimal)>.5)
+                or ((lower((LabelAnnotations->>3)::JSONB->>'description') like lower('%s'))
+                and cast(((LabelAnnotations->>3)::JSONB->>'score')as decimal)>.5)
+                or ((lower((LabelAnnotations->>4)::JSONB->>'description') like lower('%s'))
+                and cast(((LabelAnnotations->>4)::JSONB->>'score')as decimal)>.5)
+                or ((lower((LabelAnnotations->>5)::JSONB->>'description') like lower('%s'))
+                and cast(((LabelAnnotations->>5)::JSONB->>'score')as decimal)>.5)
+                or ((lower((LabelAnnotations->>6)::JSONB->>'description') like lower('%s'))
+                and cast(((LabelAnnotations->>6)::JSONB->>'score')as decimal)>.5)
+                or ((lower((LabelAnnotations->>7)::JSONB->>'description') like lower('%s'))
+                and cast(((LabelAnnotations->>7)::JSONB->>'score')as decimal)>.5)
+                or ((lower((LabelAnnotations->>8)::JSONB->>'description') like lower('%s'))
+                and cast(((LabelAnnotations->>8)::JSONB->>'score')as decimal)>.5)
+                or (lower((textannotations->>0)::JSONB->>'description') like lower('%s'))
+                or (lower((textannotations->>1)::JSONB->>'description') like lower('%s'))
+                or (lower((textannotations->>2)::JSONB->>'description') like lower('%s'))
+                or (lower((textannotations->>3)::JSONB->>'description') like lower('%s'))
+                or (lower((textannotations->>4)::JSONB->>'description') like lower('%s'))
+                or (lower((textannotations->>5)::JSONB->>'description') like lower('%s'))
+                or (lower((textannotations->>6)::JSONB->>'description') like lower('%s'))
+                or (lower((textannotations->>7)::JSONB->>'description') like lower('%s'))
+                or (lower((textannotations->>8)::JSONB->>'description') like lower('%s'))                           
+                )
+                """ % (eventid,("%"+keyword+"%"),("%"+keyword+"%"),("%"+keyword+"%"),
+                ("%"+keyword+"%"),("%"+keyword+"%"),("%"+keyword+"%"),("%"+keyword+"%"),
+                ("%"+keyword+"%"),("%"+keyword+"%"),("%"+keyword+"%"),("%"+keyword+"%"),("%"+keyword+"%"),
+                ("%"+keyword+"%"),("%"+keyword+"%"),("%"+keyword+"%"),("%"+keyword+"%"),
+                ("%"+keyword+"%"),("%"+keyword+"%"))
     conn = psycopg2.connect("dbname='analytics' user='etl' host='10.223.192.6' password='s0.Much.Data' port='5432'")
     cur = conn.cursor()
 
